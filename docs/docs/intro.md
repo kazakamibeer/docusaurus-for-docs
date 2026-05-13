@@ -5,6 +5,7 @@ sidebar_position: 1
 # Tutorial Intro
 
 Let's discover **Docusaurus in less than 5 minutes**.
+
 チュートリアルサイト：　[こちら](https://zenn.dev/sunwood_ai_labs/articles/pteranodon-docusaurus-gh-pages-starter-guide)
 
 ## Getting Started
