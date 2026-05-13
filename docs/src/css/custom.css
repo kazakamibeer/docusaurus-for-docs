@@ -28,3 +28,67 @@
   --ifm-color-primary-lightest: #4fddbf;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
+
+/* テーブルを横スクロール可能にする */
+.markdown table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* テーブルのセルはデフォルト設定に戻す */
+.markdown table td,
+.markdown table th {
+  white-space: nowrap;
+}
+
+/* コンテンツエリアの幅を最大化 */
+.container {
+  max-width: 100% !important;
+  padding-left: 1rem !important;
+  padding-right: 0.5rem !important;
+}
+
+.main-wrapper {
+  max-width: 100% !important;
+  padding: 0 !important;
+}
+
+.docMainContainer_node_modules-\@docusaurus-theme-classic-lib-theme-DocPage-Layout-Main-styles-module,
+.docMainContainer {
+  max-width: 100% !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.docPage,
+article.theme-doc-markdown,
+.theme-doc-markdown,
+.markdown {
+  max-width: none !important;
+}
+
+/* パディングとマージンの最適化 */
+.col.col--9,
+.col.col--8 {
+  padding-right: 0 !important;
+  padding-left: 1rem !important;
+}
+
+.docItemWrapper_node_modules-\@docusaurus-theme-classic-lib-theme-DocItem-Layout-styles-module,
+.docItemContainer_node_modules-\@docusaurus-theme-classic-lib-theme-DocItem-styles-module,
+.docItemContainer {
+  margin-right: 0 !important;
+  padding-right: 0 !important;
+}
+
+.theme-doc-markdown.markdown {
+  margin-right: 0 !important;
+  padding-right: 0 !important;
+}
+
+.row {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
