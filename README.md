@@ -5,6 +5,7 @@
 # Pteranodon Docs — Docusaurus × GitHub Pages スターター
 
 数分で **開発者フレンドリーなドキュメントサイト** を構築・バージョン管理・公開。
+チュートリアル：　 [こちらを参照](https://zenn.dev/sunwood_ai_labs/articles/pteranodon-docusaurus-gh-pages-starter-guide)
 
 <p align="center">
   <a href="https://github.com/Sunwood-ai-labs/docusaurus-gh-pages-starter/actions/workflows/gh_actions_deploy.yml"><img src="https://github.com/Sunwood-ai-labs/docusaurus-gh-pages-starter/actions/workflows/gh_actions_deploy.yml/badge.svg" alt="CI/CD"></a>
