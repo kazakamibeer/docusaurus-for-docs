@@ -5,9 +5,9 @@ import type * as Preset from '@docusaurus/preset-classic';
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-  title: 'Docusaurus GitHub Pages Starter',
-  tagline: 'Effortless documentation with automated deployment',
-  favicon: 'img/favicon-Pteranodon.ico',
+  title: '【test】ドキュメント共有リポジトリ',
+  tagline: 'このリポジトリはファイルやドキュメントを共有するための場所です。',
+  favicon: 'img/favicon.ico',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
   future: {
@@ -15,15 +15,15 @@ const config: Config = {
   },
 
   // Set the production url of your site here
-  url: 'https://sunwood-ai-labs.github.io',
+  url: 'https://kazakamibeer.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/docusaurus-gh-pages-starter/',
+  baseUrl: '/docusaurus-for-docs/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'sunwood-ai-labs', // Usually your GitHub org/user name.
-  projectName: 'docusaurus-gh-pages-starter', // Usually your repo name.
+  organizationName: 'kazakamibeer', // Usually your GitHub org/user name.
+  projectName: 'docusaurus-for-docs', // Usually your repo name.
   trailingSlash: false,
 
   onBrokenLinks: 'throw',
