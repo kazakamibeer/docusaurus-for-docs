@@ -74,11 +74,11 @@ const config: Config = {
     // Replace with your project's social card
     image: 'img/Pteranodon-social-card.jpg',
     navbar: {
-      title: 'Pteranodon Starter',
+      title: 'ドキュメント共有リポジトリ',
       logo: {
-        alt: 'Pteranodon Logo',
+        alt: 'Okamoto Logo',
         // src: 'img/logo.svg',
-        src: 'img/Pteranodon.png',
+        src: 'img/okamoto.png',
       },
       items: [
         {

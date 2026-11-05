@@ -1,0 +1,23 @@
+{
+  "name": "docusaurus-for-docs",
+  "version": "1.0.0",
+  "description": "ドキュメント共有リポジトリ",
+  "homepage": "https://github.com/kazakamibeer/docusaurus-for-docs#readme",
+  "bugs": {
+    "url": "https://github.com/kazakamibeer/docusaurus-for-docs/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kazakamibeer/docusaurus-for-docs.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
