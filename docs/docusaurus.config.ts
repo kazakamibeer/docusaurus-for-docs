@@ -48,21 +48,7 @@ const config: Config = {
           editUrl:
             'https://github.com/sunwood-ai-labs/docusaurus-gh-pages-starter/tree/main/',
         },
-        blog: {
-          showReadingTime: true,
-          feedOptions: {
-            type: ['rss', 'atom'],
-            xslt: true,
-          },
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/sunwood-ai-labs/docusaurus-gh-pages-starter/tree/main/',
-          // Useful options to enforce blogging best practices
-          onInlineTags: 'warn',
-          onInlineAuthors: 'warn',
-          onUntruncatedBlogPosts: 'warn',
-        },
+        blog: false,
         theme: {
           customCss: './src/css/custom.css',
         },
@@ -93,7 +79,6 @@ const config: Config = {
           position: 'left',
           label: 'DL-画像認識ハンズオン',           // タブに表示される名前
   },
-        {to: '/blog', label: 'Blog', position: 'left'},
         {
           href: 'https://github.com/sunwood-ai-labs/docusaurus-gh-pages-starter',
           label: 'GitHub',
@@ -134,12 +119,8 @@ const config: Config = {
           title: 'More',
           items: [
             {
-              label: 'Blog',
-              to: '/blog',
-            },
-            {
               label: 'GitHub',
-              href: 'https://github.com/sunwood-ai-labs/docusaurus-gh-pages-starter',
+              href: 'https://kazakamibeer.github.io/docusaurus-for-docs/docs/tutorial/intro',
             },
           ],
         },
