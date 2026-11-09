@@ -87,6 +87,12 @@ const config: Config = {
           position: 'left',
           label: 'Tutorial',
         },
+        {
+          type: 'docSidebar',
+          sidebarId: 'imageRecognitionSidebar',   // sidebars.ts のキーと同じ名前にする
+          position: 'left',
+          label: 'DL-画像認識ハンズオン',           // タブに表示される名前
+  },
         {to: '/blog', label: 'Blog', position: 'left'},
         {
           href: 'https://github.com/sunwood-ai-labs/docusaurus-gh-pages-starter',
