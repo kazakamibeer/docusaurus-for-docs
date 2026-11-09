@@ -9,8 +9,7 @@
 チュートリアル：　 [こちらを参照](https://zenn.dev/sunwood_ai_labs/articles/pteranodon-docusaurus-gh-pages-starter-guide)
 
 <p align="center">
-  <a href="https://github.com/Sunwood-ai-labs/docusaurus-gh-pages-starter/actions/workflows/gh_actions_deploy.yml"><img src="https://github.com/Sunwood-ai-labs/docusaurus-gh-pages-starter/actions/workflows/gh_actions_deploy.yml/badge.svg" alt="CI/CD"></a>
-  <a href="https://github.com/Sunwood-ai-labs/docusaurus-gh-pages-starter/releases"><img src="https://img.shields.io/github/v/release/Sunwood-ai-labs/docusaurus-gh-pages-starter?logo=github&label=release" alt="Latest release"></a>
+  <a href="https://github.com/kazakamibeer/docusaurus-for-docs/actions/workflows/gh_actions_deploy.yml"><img src="https://github.com/kazakamibeer/docusaurus-for-docs/actions/workflows/gh_actions_deploy.yml/badge.svg" alt="CI/CD"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
   <img src="https://img.shields.io/badge/Docusaurus-v3-2ecc71" alt="Docusaurus v3">
   <img src="https://img.shields.io/badge/TypeScript-Ready-3178c6?logo=typescript" alt="TypeScript ready">

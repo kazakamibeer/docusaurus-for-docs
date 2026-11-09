@@ -46,7 +46,7 @@ const config: Config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/sunwood-ai-labs/docusaurus-gh-pages-starter/tree/main/',
+            'https://github.com/kazakamibeer/docusaurus-for-docs/tree/main/docs/',
         },
         blog: false,
         theme: {
@@ -80,7 +80,7 @@ const config: Config = {
           label: 'DL-画像認識ハンズオン',           // タブに表示される名前
   },
         {
-          href: 'https://github.com/sunwood-ai-labs/docusaurus-gh-pages-starter',
+          href: 'https://github.com/kazakamibeer/docusaurus-for-docs',
           label: 'GitHub',
           position: 'right',
         },
@@ -90,42 +90,33 @@ const config: Config = {
       style: 'dark',
       links: [
         {
-          title: 'Docs',
+          title: 'ドキュメント',
           items: [
             {
               label: 'Tutorial',
               to: '/docs/tutorial/intro',
             },
-          ],
-        },
-        {
-          title: 'Community',
-          items: [
             {
-              label: 'Stack Overflow',
-              href: 'https://stackoverflow.com/questions/tagged/docusaurus',
-            },
-            {
-              label: 'Discord',
-              href: 'https://discordapp.com/invite/docusaurus',
-            },
-            {
-              label: 'X',
-              href: 'https://x.com/docusaurus',
+              label: 'DL-画像認識ハンズオン',
+              to: '/docs/image-recognition/image-video-recognition-google-cloud-handson',
             },
           ],
         },
         {
-          title: 'More',
+          title: 'リンク',
           items: [
             {
-              label: 'GitHub',
-              href: 'https://kazakamibeer.github.io/docusaurus-for-docs/docs/tutorial/intro',
+              label: 'GitHub リポジトリ',
+              href: 'https://github.com/kazakamibeer/docusaurus-for-docs',
+            },
+            {
+              label: 'Docusaurus 公式ドキュメント',
+              href: 'https://docusaurus.io/docs',
             },
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} Docusaurus GitHub Pages Starter. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} ドキュメント共有リポジトリ. Built with Docusaurus.`,
     },
     prism: {
       theme: prismThemes.github,
