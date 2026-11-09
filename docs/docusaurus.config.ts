@@ -5,7 +5,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-  title: '【test】ドキュメント共有リポジトリ',
+  title: 'ドキュメント共有リポジトリ',
   tagline: 'このリポジトリはファイルやドキュメントを共有するための場所です。',
   favicon: 'img/favicon.ico',
 
