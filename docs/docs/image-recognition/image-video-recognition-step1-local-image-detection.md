@@ -111,14 +111,21 @@ sudo apt install -y libgl1 libglib2.0-0t64
 
 ```bash
 curl -LsSf https://astral.sh/uv/0.13.7/install.sh | sh
-source $HOME/.local/bin/env
 uv --version
 ```
 
-`uv 0.13.7` と表示されれば成功です。
+`uv 0.13.7` と表示されれば成功です。uv は `~/.local/bin` に入ります。
 
-- 2行目は、入れたばかりの uv を今のターミナルで使えるようにするものです。次にターミナルを開いたときからは不要です。
-- Windows 側に uv を入れていても、WSL の uv とは別物です。この手順書では WSL の uv だけを使います。
+`uv: command not found` と表示された場合は、`~/.local/bin` がまだコマンドの探し先（PATH）に入っていません。ターミナルを閉じて開き直してから、もう一度 `uv --version` を実行します。それでも表示されない場合は、次を実行します。
+
+```bash
+source $HOME/.local/bin/env
+```
+
+> **`source $HOME/.local/bin/env` で `No such file or directory` と出た場合**
+> 問題ありません。インストーラーは、`~/.local/bin` が最初から PATH に入っている場合、PATH を設定するためのこのファイル（`env`）を作りません。Ubuntu では、`~/.local/bin` フォルダがあればログイン時に自動で PATH に入るため、このファイルが無いことがあります。`uv --version` で版が表示されれば、そのまま進めて構いません。
+
+Windows 側に uv を入れていても、WSL の uv とは別物です。この手順書では WSL の uv だけを使います。
 
 URL の `0.13.7` は、Step 4・6 の Dockerfile で使う uv の版（`ghcr.io/astral-sh/uv:0.13.7`）とそろえています。`uv.lock` の書き方は uv の版によって変わることがあり、Docker の中の uv がローカルより古いと、`uv.lock` を読めずにビルドが失敗するためです。あとで `uv self update` などで uv を新しくしたときは、Dockerfile の版も同じ数字に書き換えます。
 
@@ -550,7 +557,8 @@ results = model(IMAGE_PATH, conf=CONF, classes=[0])
 | 症状                                                                       | 原因と対処                                                                                                                                                                                                                       |
 | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `アプリケーション制御ポリシーによってこのファイルがブロックされました`     | Windows の PowerShell で実行している。Ubuntu のターミナル（行頭が `ユーザー名@PC名:`）で実行する                                                                                                                                 |
-| `uv: command not found`                                                    | インストール直後で、uv の場所が設定されていない。`source $HOME/.local/bin/env` を実行するか、ターミナルを開き直す                                                                                                                |
+| `uv: command not found`                                                    | インストール直後で、uv の場所（`~/.local/bin`）が PATH に入っていない。ターミナルを開き直す。それでもだめなら `source $HOME/.local/bin/env` を実行する                                                                           |
+| `source $HOME/.local/bin/env` で `No such file or directory`               | `~/.local/bin` が最初から PATH に入っていたため、インストーラーがこのファイルを作らなかった。`uv --version` が表示されれば問題ない（1-3）                                                                                        |
 | `ImportError: libGL.so.1: cannot open shared object file`                  | OpenCV が使う部品が無い。1-2 の `sudo apt install` を実行する                                                                                                                                                                    |
 | `uv add` で `torch` のダウンロードが 1GB を超える                          | GPU 版が入ろうとしている。2-3 の設定が `pyproject.toml` の末尾にあるか `cat pyproject.toml` で確かめる                                                                                                                           |
 | `torch.__version__` に `+cpu` が付かない                                   | 2-3 の設定より前に PyTorch が入った。設定を確かめてから `uv lock --upgrade-package torch --upgrade-package torchvision` と `uv sync` を実行する                                                                                  |
