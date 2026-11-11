@@ -104,6 +104,8 @@ flowchart LR
 
 まず Google Cloud を使わず、ローカル PC だけで動かします。Web カメラを使うので、WSL や DevContainer ではなく Windows 上で直接動かします（WSL やコンテナからは、カメラを使うのに手間がかかります）。
 
+> 環境の準備から結果の読み方まで詳しく書いた手順書：[[image-video-recognition-step1-local-image-detection]]
+
 #### 開発環境
 
 - Python 3.12
