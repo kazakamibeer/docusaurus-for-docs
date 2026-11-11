@@ -1,3 +1,8 @@
+---
+sidebar_position: 1
+title: 【画像認識ハンズオン on Google Cloud】概要
+---
+
 # 画像・動画による人物認識と Google Cloud のハンズオン構築手順
 
 ## 1. 目的と進め方
@@ -10,20 +15,20 @@
 
 「人物の認識」にはいくつかの段階があります。どこまでをどの Step で扱うかを先に決めておきます。
 
-| 段階 | 内容 | 扱う Step |
-|---|---|---|
-| 検出 | 画像の中のどこに人がいるか | Step 1 |
-| 追跡 | 動画の中で同じ人に同じ ID を付け続ける | Step 2 |
-| 数える・動きを見る | 人数、線を越えた人数、決めた範囲にいた時間 | Step 3 |
-| 姿勢 | 関節の位置（立つ・座る・手を挙げる など） | Step 3 |
-| 精度を知る | どんなときに見落とし・誤検出・ID の取り違えが起きるか | Step 3 |
-| 本人の特定 | 顔などから「誰か」を当てる | 追加課題（第6章） |
+| 段階               | 内容                                                  | 扱う Step         |
+| ------------------ | ----------------------------------------------------- | ----------------- |
+| 検出               | 画像の中のどこに人がいるか                            | Step 1            |
+| 追跡               | 動画の中で同じ人に同じ ID を付け続ける                | Step 2            |
+| 数える・動きを見る | 人数、線を越えた人数、決めた範囲にいた時間            | Step 3            |
+| 姿勢               | 関節の位置（立つ・座る・手を挙げる など）             | Step 3            |
+| 精度を知る         | どんなときに見落とし・誤検出・ID の取り違えが起きるか | Step 3            |
+| 本人の特定         | 顔などから「誰か」を当てる                            | 追加課題（第6章） |
 
 ### 最終的に作るシステム
 
 ```mermaid
 flowchart LR
-  A[動画ファイル / カメラ] --> B["video.py<br>YOLO + ByteTrack"]
+  A["動画ファイル<br>（カメラで録画したものなど）"] --> B["video.py<br>YOLO + ByteTrack"]
   B --> C["output.mp4<br>detections.jsonl"]
   C --> GCS[(Cloud Storage)]
   B --> D[summary.json]
@@ -32,7 +37,7 @@ flowchart LR
   GCS -. 同じ動画 .-> VI[Video Intelligence API]
 ```
 
-1. カメラまたは動画ファイルから映像を取得する
+1. 動画ファイル（Windows のカメラアプリで録画したものなど）から映像を取得する
 2. Python・OpenCV で映像をフレームに分ける
 3. YOLO で人物を検出し、ByteTrack で追跡する
 4. 枠を描いた動画とフレームごとの検出結果を Cloud Storage に保存する
@@ -42,20 +47,21 @@ flowchart LR
 
 ## 2. 使用する技術・サービス
 
-| 分野 | 技術・サービス | 役割 |
-|---|---|---|
-| 開発言語 | Python 3.12 | 認識処理全体 |
-| パッケージ管理 | uv | Python 環境・依存関係の管理（ロックファイルで固定） |
-| 画像処理 | OpenCV | 動画の読み込み、フレームの取り出し、動画の書き出し |
-| AI モデル | Ultralytics YOLO | 人物の検出・姿勢推定 |
-| 追跡 | ByteTrack | フレーム間で同じ人物を追跡 |
-| コンテナ | Docker | ローカルとクラウドの実行環境をそろえる |
-| イメージ保管 | Artifact Registry | Docker イメージの保管 |
-| API | Cloud Run | 認識結果のまとめを受け取って保存する（認証あり） |
-| データ保存 | Firestore | 動画ごと・人物ごとのまとめ |
-| ファイル保存 | Cloud Storage | 元動画、枠付き動画、フレームごとの検出結果 |
-| 認識 API | Video Intelligence API | Google が用意した人物検出。YOLO との比較用 |
-| AI 実行環境 | Compute Engine | クラウド上で YOLO を実行（CPU → GPU） |
+| 分野               | 技術・サービス         | 役割                                                  |
+| ------------------ | ---------------------- | ----------------------------------------------------- |
+| ローカルの実行環境 | WSL2（Ubuntu 24.04）   | Step 1〜5 の開発・実行。Step 6 の Docker と同じ Linux |
+| 開発言語           | Python 3.13            | 認識処理全体                                          |
+| パッケージ管理     | uv                     | Python 環境・依存関係の管理（ロックファイルで固定）   |
+| 画像処理           | OpenCV                 | 動画の読み込み、フレームの取り出し、動画の書き出し    |
+| AI モデル          | Ultralytics YOLO       | 人物の検出・姿勢推定                                  |
+| 追跡               | ByteTrack              | フレーム間で同じ人物を追跡                            |
+| コンテナ           | Docker                 | ローカルとクラウドの実行環境をそろえる                |
+| イメージ保管       | Artifact Registry      | Docker イメージの保管                                 |
+| API                | Cloud Run              | 認識結果のまとめを受け取って保存する（認証あり）      |
+| データ保存         | Firestore              | 動画ごと・人物ごとのまとめ                            |
+| ファイル保存       | Cloud Storage          | 元動画、枠付き動画、フレームごとの検出結果            |
+| 認識 API           | Video Intelligence API | Google が用意した人物検出。YOLO との比較用            |
+| AI 実行環境        | Compute Engine         | クラウド上で YOLO を実行（CPU → GPU）                 |
 
 ### Cloud Run と Compute Engine の役割
 
@@ -96,35 +102,77 @@ flowchart LR
 
 国外のリージョンに渡す映像は、架空の映像や公開データセットなど、国外で処理されても問題がないものに限ります。
 
+### 3-4. ローカルの実行環境（WSL）
+
+ローカルでの開発と実行は、Windows ではなく **WSL2 の Ubuntu** で行います。
+
+| 理由                              | 内容                                                                                                                                                                                                                                                                                     |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Windows では PyTorch が動かない   | この PC では Windows 11 の Smart App Control がオンになっています。署名のない `torch.dll` や、uv が作る `yolo.exe` が読み込みを止められます（エラー：「アプリケーション制御ポリシーによってこのファイルがブロックされました」）。WSL の中の Linux のプログラムは、この仕組みの対象外です |
+| Docker と同じ Linux で動かせる    | Step 6 で VM に載せる Docker イメージも Linux です。ローカルと同じ環境になるので、「ローカルでは動いたのにクラウドでは動かない」というずれが減ります                                                                                                                                     |
+| PyTorch の CPU 版を最初から使える | Linux の PyTorch は、そのまま入れると GPU 版（数GB）になります。最初から CPU 版にしておくと、ダウンロードが小さく、Docker イメージとも同じになります                                                                                                                                     |
+
+WSL を使うと、次の2点がこれまでと変わります。
+
+- **Web カメラは使わない**：WSL からは Web カメラを直接使えません。カメラの映像は、Windows のカメラアプリで録画した動画ファイルとして使います（Step 2）
+- **画面表示は WSLg で出る**：`--show` で表示するウィンドウは、Windows 11 の WSLg により Windows 側に表示されます
+
+WSL での開発が会社のルールで認められていることを、事前に確認しておきます。
+
 ## 4. 構築手順
 
 各 Step の最後に「完了条件」を置いています。すべて満たしてから次へ進みます。
 
 ### Step 1：ローカル PC で画像から人物を検出する
 
-まず Google Cloud を使わず、ローカル PC だけで動かします。Web カメラを使うので、WSL や DevContainer ではなく Windows 上で直接動かします（WSL やコンテナからは、カメラを使うのに手間がかかります）。
+まず Google Cloud を使わず、ローカル PC だけで動かします。実行するのは WSL2 の Ubuntu の中です（理由は 3-4）。
 
 > 環境の準備から結果の読み方まで詳しく書いた手順書：[[image-video-recognition-step1-local-image-detection]]
 
 #### 開発環境
 
-- Python 3.12
-- uv
+- WSL2（Ubuntu 24.04）
+- uv 0.13.7
+- Python 3.13（uv が自動で入れる）
+- PyTorch の CPU 版
 - OpenCV
-- Ultralytics YOLO（PyTorch も一緒に入ります）
+- Ultralytics YOLO
 - lap（ByteTrack が使うパッケージ。Step 2 で必要です）
 
 #### プロジェクト作成・ライブラリ導入
 
-```bash
-mkdir image-recognition-handson
-cd image-recognition-handson
+以下は WSL の Ubuntu のターミナルで実行します。プロジェクトは WSL の中（`~/dev/`）に作ります。`/mnt/c/...`（Windows のフォルダ）に作ると、ファイルの読み書きが遅くなります。
 
-uv init --python 3.12
-uv add opencv-python ultralytics lap
+```bash
+# OpenCV が使うライブラリ（入っていれば何もしない）
+sudo apt update
+sudo apt install -y libgl1 libglib2.0-0t64
+
+# uv（Dockerfile と同じ版）
+curl -LsSf https://astral.sh/uv/0.13.7/install.sh | sh
+source $HOME/.local/bin/env
+
+mkdir -p ~/dev/image-recognition-handson
+cd ~/dev/image-recognition-handson
+uv init --app --no-package --python 3.13
+
+# PyTorch は CPU 版を使う（そのまま入れると GPU 版で数GBになる）
+cat >> pyproject.toml <<'EOF'
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]
+torchvision = [{ index = "pytorch-cpu" }]
+EOF
+
+uv add torch torchvision opencv-python ultralytics lap
 ```
 
-`lap` は、足りないときに Ultralytics が pip で自動インストールしようとします。しかし uv の環境では pip が無いため失敗することがあるので、最初に入れておきます。
+`lap` は、足りないときに Ultralytics が pip で自動インストールしようとします。しかし uv の環境には pip が無いため失敗することがあるので、最初に入れておきます。
 
 #### サンプルコード
 
@@ -313,18 +361,32 @@ uv run python video.py --source sample.mp4 --show
 
 # 追跡せず検出だけ（追跡ありと見比べる）
 uv run python video.py --source sample.mp4 --show --detect-only --out-dir out_detect
-
-# Web カメラ（カメラ番号 0）
-uv run python video.py --source 0 --show
 ```
+
+`--show` のウィンドウは、WSLg により Windows 側に表示されます。表示でエラーになる場合は `--show` を付けずに実行し、できた `out/output.mp4` を Windows 側で再生します（`explorer.exe out` でフォルダが開きます）。
+
+#### カメラの映像で試す
+
+WSL からは Web カメラを直接使えないため、Windows のカメラアプリで録画した動画を使います。
+
+1. Windows のカメラアプリでビデオを録画する（写る人全員の許可を取る。3-1）
+2. 録画したファイルを WSL のプロジェクトにコピーする
+
+```bash
+# 録画は通常「ピクチャ\カメラ ロール」に保存される（ファイル名は例。OneDrive に保存される設定の場合は場所が変わる）
+cp "/mnt/c/Users/ユーザー名/Pictures/Camera Roll/WIN_20261111_10_00_00_Pro.mp4" camera.mp4
+uv run python video.py --source camera.mp4 --show --out-dir out_camera
+```
+
+プログラムの `--source 0`（カメラ番号）の仕組みは、Windows で直接動かす環境に移したときにそのまま使えます。
 
 `out/` に次の3つができます。
 
-| ファイル | 中身 |
-|---|---|
-| `output.mp4` | 枠・追跡 ID・人数・FPS を描いた動画 |
+| ファイル           | 中身                                       |
+| ------------------ | ------------------------------------------ |
+| `output.mp4`       | 枠・追跡 ID・人数・FPS を描いた動画        |
 | `detections.jsonl` | フレームごと・人物ごとの検出結果（1行1件） |
-| `summary.json` | 人物（追跡 ID）ごとのまとめ |
+| `summary.json`     | 人物（追跡 ID）ごとのまとめ                |
 
 #### この段階で理解すること
 
@@ -337,7 +399,7 @@ uv run python video.py --source 0 --show
 
 - [ ] `out/output.mp4` で、人物に追跡 ID 付きの枠が出ている
 - [ ] 自分の PC での処理 FPS を記録した（Step 7 で GPU と比べる）
-- [ ] Web カメラでも動いた
+- [ ] カメラアプリで録画した動画でも動いた
 
 ### Step 3：人物の認識を深める（ローカル）
 
@@ -391,9 +453,9 @@ keypoints = result.keypoints.xy  # 人数 × 17点 × (x, y)
 
 結果は次のような表にまとめます。
 
-| 条件 | conf | 実際の人数 | 検出数 | 見落とし | 誤検出 | ID の取り違え |
-|---|---|---|---|---|---|---|
-| 人が重なる | 0.4 | | | | | |
+| 条件       | conf | 実際の人数 | 検出数 | 見落とし | 誤検出 | ID の取り違え |
+| ---------- | ---- | ---------- | ------ | -------- | ------ | ------------- |
+| 人が重なる | 0.4  |            |        |          |        |               |
 
 さらに進めるなら、正解データ付きの公開データセット（MOT17 など）と評価ツール（TrackEval など）を使い、数値で評価します。
 
@@ -407,19 +469,23 @@ keypoints = result.keypoints.xy  # 人数 × 17点 × (x, y)
 
 ここから Google Cloud を使います。この Step では、AI の処理はまだローカル PC で行い、結果だけをクラウドに保存します。
 
-| サービス | 作成するもの | 用途 |
-|---|---|---|
-| Cloud Storage | バケット | 元動画、枠付き動画、`detections.jsonl` |
-| Firestore | データベース | 動画ごと・人物ごとのまとめ |
-| Cloud Run | API（認証あり） | まとめを受け取り、Firestore に保存 |
+| サービス      | 作成するもの    | 用途                                   |
+| ------------- | --------------- | -------------------------------------- |
+| Cloud Storage | バケット        | 元動画、枠付き動画、`detections.jsonl` |
+| Firestore     | データベース    | 動画ごと・人物ごとのまとめ             |
+| Cloud Run     | API（認証あり） | まとめを受け取り、Firestore に保存     |
 
 #### 4-1. Google Cloud プロジェクトの準備
 
 1. Google Cloud Console でプロジェクトを作成する
 2. 課金アカウントを紐付ける
 3. **予算アラートを設定する**（例：月3,000円で通知。アラートは通知だけで、利用を止めるものではない）
-4. Google Cloud CLI をローカル PC にインストールする
+4. Google Cloud CLI を WSL の Ubuntu にインストールする（Windows 側ではなく、プロジェクトのある WSL に入れる）
 5. CLI でログインする
+
+Google Cloud CLI は、公式ドキュメントの「Debian / Ubuntu」の手順（apt でのインストール）で入れます。
+
+ログインのコマンドは、ブラウザを開いて Google アカウントでの承認を求めます。WSL からブラウザが開かない場合は、表示された URL を Windows のブラウザに貼り付けて承認し、表示されたコードをターミナルに貼り付けます。
 
 ```bash
 gcloud init
@@ -449,13 +515,13 @@ gcloud services enable \
 
 この先で使う `gcloud run deploy --source` と `gcloud builds submit` は、裏で Cloud Build を使います。権限は、ビルドを依頼する人と、ビルドを実行するサービスアカウントの2か所に必要です。
 
-| 誰に | ロール | 用途 |
-|---|---|---|
-| ビルドを依頼するユーザー | Cloud Build Editor（`roles/cloudbuild.builds.editor`） | ビルドの作成・実行 |
-| ビルドを実行するサービスアカウント | Artifact Registry Writer（`roles/artifactregistry.writer`） | Docker イメージの Push |
-| 同上 | Logs Writer（`roles/logging.logWriter`） | Cloud Logging へのログ出力 |
-| 同上 | Storage Bucket Viewer（`roles/storage.bucketViewer`） | ビルド用バケットの参照 |
-| 同上 | Storage Object User（`roles/storage.objectUser`） | ビルド用バケットへのソースのアップロードなど |
+| 誰に                               | ロール                                                      | 用途                                         |
+| ---------------------------------- | ----------------------------------------------------------- | -------------------------------------------- |
+| ビルドを依頼するユーザー           | Cloud Build Editor（`roles/cloudbuild.builds.editor`）      | ビルドの作成・実行                           |
+| ビルドを実行するサービスアカウント | Artifact Registry Writer（`roles/artifactregistry.writer`） | Docker イメージの Push                       |
+| 同上                               | Logs Writer（`roles/logging.logWriter`）                    | Cloud Logging へのログ出力                   |
+| 同上                               | Storage Bucket Viewer（`roles/storage.bucketViewer`）       | ビルド用バケットの参照                       |
+| 同上                               | Storage Object User（`roles/storage.objectUser`）           | ビルド用バケットへのソースのアップロードなど |
 
 プロジェクトのオーナーは、ユーザー側の権限を最初から持っています。オーナーでない人がビルドするときだけ、Cloud Build Editor を付けます。
 
@@ -552,7 +618,7 @@ videos/{video_id}                 ← 動画1本につき1件
 ```bash
 mkdir api
 cd api
-uv init --app --no-workspace --python 3.12
+uv init --app --no-package --no-workspace --python 3.13
 uv add fastapi uvicorn google-cloud-firestore
 cd ..
 ```
@@ -604,12 +670,15 @@ def create_summary(summary: VideoSummary) -> dict:
     return {"video_id": summary.video_id, "tracks": len(summary.person_tracks)}
 ```
 
-`api/Dockerfile` を作ります（uv のイメージのバージョンは、ローカルの `uv --version` に合わせます）。
+`api/Dockerfile` を作ります。
+
+- Python の版（`python:3.13-slim`）は、`.python-version` と同じにします。
+- uv の版（`uv:0.13.7`）は、ローカルの `uv --version` と同じにします。Docker の中の uv がローカルより古いと、`uv.lock` を読めずにビルドが失敗することがあります。
 
 ```dockerfile
-FROM python:3.12-slim
+FROM python:3.13-slim
 
-COPY --from=ghcr.io/astral-sh/uv:0.8.0 /uv /bin/uv
+COPY --from=ghcr.io/astral-sh/uv:0.13.7 /uv /bin/uv
 
 WORKDIR /app
 ENV UV_LINK_MODE=copy UV_COMPILE_BYTECODE=1 UV_PYTHON_DOWNLOADS=never
@@ -698,19 +767,12 @@ if __name__ == "__main__":
     send_summary(os.environ["API_URL"], Path(sys.argv[1]))
 ```
 
-送信します（bash の場合）。
+送信します。
 
 ```bash
 export API_URL=$(gcloud run services describe recognition-api --region=asia-northeast1 --format='value(status.url)')
 export ID_TOKEN=$(gcloud auth print-identity-token)
 uv run python cloud_client.py out/summary.json
-```
-
-PowerShell の場合は、最初の2行を次のようにします。
-
-```powershell
-$env:API_URL = gcloud run services describe recognition-api --region=asia-northeast1 --format='value(status.url)'
-$env:ID_TOKEN = gcloud auth print-identity-token
 ```
 
 ID トークンの有効期限は約1時間です。トークンは画面やログに出さないようにします。
@@ -725,10 +787,10 @@ ID トークンの有効期限は約1時間です。トークンは画面やロ�
 
 自分で YOLO を動かすほかに、Google が用意した API で人物を検出する方法もあります。同じ動画で比べ、それぞれの向き・不向きを知ります。
 
-| API | できること |
-|---|---|
-| Video Intelligence API | 動画の人物検出と追跡、顔の検出、物体の追跡 |
-| Vision API | 画像の物体検出（`Person` を返す）、顔の検出 |
+| API                    | できること                                  |
+| ---------------------- | ------------------------------------------- |
+| Video Intelligence API | 動画の人物検出と追跡、顔の検出、物体の追跡  |
+| Vision API             | 画像の物体検出（`Person` を返す）、顔の検出 |
 
 どちらも顔の**検出**（どこに顔があるか）まではしますが、**本人の特定**（誰の顔か）はしません。本人の特定は、自分で作る必要があります（第6章）。
 
@@ -775,14 +837,14 @@ Video Intelligence API は東京リージョンに対応していないため、
 
 #### 比べる項目
 
-| 項目 | 自分で動かす YOLO | Video Intelligence API |
-|---|---|---|
-| 検出された人物の数 | | |
-| 見落とし・誤検出（Step 3-4 と同じフレームで） | | |
-| 1分の動画の処理時間 | | |
-| 1分あたりの料金 | VM の料金から計算 | 公式の料金表から計算 |
-| 線を越えた人数などの独自処理 | 自由に作れる | 結果を受け取ってから自分で作る |
-| 準備の手間 | 環境・VM・GPU の管理が必要 | API を呼ぶだけ |
+| 項目                                          | 自分で動かす YOLO          | Video Intelligence API         |
+| --------------------------------------------- | -------------------------- | ------------------------------ |
+| 検出された人物の数                            |                            |                                |
+| 見落とし・誤検出（Step 3-4 と同じフレームで） |                            |                                |
+| 1分の動画の処理時間                           |                            |                                |
+| 1分あたりの料金                               | VM の料金から計算          | 公式の料金表から計算           |
+| 線を越えた人数などの独自処理                  | 自由に作れる               | 結果を受け取ってから自分で作る |
+| 準備の手間                                    | 環境・VM・GPU の管理が必要 | API を呼ぶだけ                 |
 
 #### 完了条件
 
@@ -811,7 +873,7 @@ image-recognition-handson/
 
 #### 6-2. CPU 版の PyTorch を使う
 
-Linux で PyTorch を普通に入れると GPU（CUDA）版になり、イメージが数GBになります。CPU の VM では使わないので、Linux のときだけ CPU 版を入れるように `pyproject.toml` に追記します。
+Linux で PyTorch を普通に入れると GPU（CUDA）版になり、イメージが数GBになります。この設定は Step 1 で `pyproject.toml` に追記済みです。
 
 ```toml
 [[tool.uv.index]]
@@ -820,15 +882,11 @@ url = "https://download.pytorch.org/whl/cpu"
 explicit = true
 
 [tool.uv.sources]
-torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
-torchvision = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+torch = [{ index = "pytorch-cpu" }]
+torchvision = [{ index = "pytorch-cpu" }]
 ```
 
-```bash
-uv add torch torchvision
-```
-
-Windows のローカル環境は、これまでどおり PyPI の PyTorch を使います。
+`uv.lock` には CPU 版の PyTorch が記録されているので、Docker の中でも `uv sync --frozen` で同じ CPU 版が入ります。ここで追加の作業はありません。
 
 #### 6-3. VM で動かすプログラム
 
@@ -873,10 +931,12 @@ if __name__ == "__main__":
 
 #### 6-4. Dockerfile
 
-```dockerfile
-FROM python:3.12-slim
+Python と uv の版は、Step 4-4 の `api/Dockerfile` と同じ考え方で、ローカルとそろえます。
 
-COPY --from=ghcr.io/astral-sh/uv:0.8.0 /uv /bin/uv
+```dockerfile
+FROM python:3.13-slim
+
+COPY --from=ghcr.io/astral-sh/uv:0.13.7 /uv /bin/uv
 
 # OpenCV が使うライブラリ
 RUN apt-get update \
@@ -980,15 +1040,17 @@ time docker run --rm \
 
 #### ローカルとクラウドの比較
 
-| 比較項目 | ローカル PC | Compute Engine |
-|---|---|---|
-| 認識プログラム（`video.py`） | 同じ | 同じ |
-| AI モデル | 同じ | 同じ（イメージに含める） |
-| 画面表示 | `--show` で表示 | なし（動画ファイルに書き出す） |
-| 動画ファイル | ローカル | Cloud Storage から取得 |
-| 結果の保存先 | `out/`（必要なら手で送る） | Cloud Storage と、API 経由で Firestore |
-| 認証 | 自分のアカウント | VM のサービスアカウント |
-| PyTorch | PyPI 版 | CPU 版 |
+| 比較項目                     | ローカル PC（WSL）                  | Compute Engine                             |
+| ---------------------------- | ----------------------------------- | ------------------------------------------ |
+| OS                           | Ubuntu 24.04                        | Docker の中の Debian（`python:3.13-slim`） |
+| 認識プログラム（`video.py`） | 同じ                                | 同じ                                       |
+| AI モデル                    | 同じ                                | 同じ（イメージに含める）                   |
+| Python・ライブラリ           | `uv.lock` どおり                    | 同じ `uv.lock` どおり                      |
+| PyTorch                      | CPU 版                              | CPU 版                                     |
+| 画面表示                     | `--show` で WSLg のウィンドウに表示 | なし（動画ファイルに書き出す）             |
+| 動画ファイル                 | ローカル                            | Cloud Storage から取得                     |
+| 結果の保存先                 | `out/`（必要なら手で送る）          | Cloud Storage と、API 経由で Firestore     |
+| 認証                         | 自分のアカウント                    | VM のサービスアカウント                    |
 
 #### 完了条件
 
@@ -1008,26 +1070,29 @@ CPU の VM で処理速度が足りないことを確かめてから、GPU を�
 
 #### 7-2. GPU の候補
 
-| GPU | マシンタイプ | 主な用途 |
-|---|---|---|
-| NVIDIA T4 | N1 に GPU を付ける | 小規模な推論。安い |
-| NVIDIA L4 | G2（GPU が最初から付いている） | 推論・動画処理 |
-| NVIDIA A100 | A2 | 大きな学習・推論。このハンズオンには過剰 |
+| GPU         | マシンタイプ                   | 主な用途                                 |
+| ----------- | ------------------------------ | ---------------------------------------- |
+| NVIDIA T4   | N1 に GPU を付ける             | 小規模な推論。安い                       |
+| NVIDIA L4   | G2（GPU が最初から付いている） | 推論・動画処理                           |
+| NVIDIA A100 | A2                             | 大きな学習・推論。このハンズオンには過剰 |
 
 使える GPU、ゾーン、料金、在庫は変わるため、VM を作る時点で公式情報を確認します。
 
 #### 7-3. GPU 版のイメージを作る
 
-Step 6-2 で追記した `[[tool.uv.index]]` と `[tool.uv.sources]` を消して `uv lock` を実行し、PyPI の PyTorch（Linux では GPU 版）に戻します。そのうえで、別のタグでビルドします。
+Step 1 で追記した `[[tool.uv.index]]` と `[tool.uv.sources]` を消して `uv lock` を実行し、PyPI の PyTorch（Linux では GPU 版）に戻します。そのうえで、別のタグでビルドします。
+
+`uv lock` は `uv.lock` を書き換えるだけで、ライブラリは入れ直しません。ここで `uv sync` や `uv run` を実行すると、WSL のプロジェクトにも GPU 版の PyTorch（数GB）が入るので、ビルドが終わるまで実行しないようにします。
 
 ```bash
+git switch -c gpu   # GPU 版の設定はブランチを分けて保つ
 uv lock
 gcloud builds submit \
   --tag=asia-northeast1-docker.pkg.dev/YOUR_PROJECT_ID/recognition/worker:gpu \
   .
 ```
 
-CPU 版と GPU 版を同じブランチで保ちたい場合は、ブランチを分けるか、uv の optional dependencies で切り替えます。
+ビルドが終わったら、`gpu` ブランチで `pyproject.toml` と `uv.lock` の変更をコミットしてから `git switch -` で元のブランチに戻ります。こうすると、手元の設定が CPU 版に戻ります（コミットせずに戻ると、変更がそのまま付いてきます）。CPU 版と GPU 版を同じブランチで保ちたい場合は、uv の optional dependencies で切り替える方法もあります。
 
 #### 7-4. GPU 付きの VM で実行する
 
@@ -1068,14 +1133,14 @@ gcloud compute instances create recognition-gpu \
 
 #### 7-5. 比べる指標
 
-| 指標 | ローカル PC | VM（CPU） | VM（GPU） |
-|---|---|---|---|
-| 1フレームあたりの推論時間 | | | |
-| 処理 FPS | | | |
-| 1分の動画の処理時間 | | | |
-| CPU・GPU の使用率 | | | |
-| 1時間あたりの料金 | | | |
-| 1分の動画を処理する料金 | | | |
+| 指標                      | ローカル PC | VM（CPU） | VM（GPU） |
+| ------------------------- | ----------- | --------- | --------- |
+| 1フレームあたりの推論時間 |             |           |           |
+| 処理 FPS                  |             |           |           |
+| 1分の動画の処理時間       |             |           |           |
+| CPU・GPU の使用率         |             |           |           |
+| 1時間あたりの料金         |             |           |           |
+| 1分の動画を処理する料金   |             |           |           |
 
 「1分の動画を処理する料金」まで計算すると、GPU は高くても速いぶん結果的に安くなる場合があるかが分かります。
 
@@ -1143,12 +1208,12 @@ image-recognition-handson/
 
 人物の検出・追跡ができたら、必要に応じて顔による本人の特定を加えます。
 
-| 技術 | 役割 |
-|---|---|
-| RetinaFace など | 顔の検出 |
-| ArcFace など | 顔画像を特徴量（数値の並び）に変換 |
-| 類似度の計算 | 登録済みの特徴量と照合 |
-| Firestore など | 出社記録などの保存 |
+| 技術            | 役割                               |
+| --------------- | ---------------------------------- |
+| RetinaFace など | 顔の検出                           |
+| ArcFace など    | 顔画像を特徴量（数値の並び）に変換 |
+| 類似度の計算    | 登録済みの特徴量と照合             |
+| Firestore など  | 出社記録などの保存                 |
 
 顔認識では、顔の検出、特徴量の抽出、登録データとの照合を組み合わせます。
 
@@ -1162,20 +1227,20 @@ image-recognition-handson/
 
 ## 7. 学習計画（4週間＋任意1週）
 
-| 週 | 学習内容 | 到達目標 |
-|---|---|---|
-| 1週目 | Step 1・2：画像と動画の検出、追跡、FPS の計測 | 動画の人物を追跡 ID 付きで保存でき、FPS を測れる |
-| 2週目 | Step 3：線を越えた人数、滞在時間、姿勢、精度の評価 | 人物の認識が、どんな条件で間違えるかを説明できる |
-| 3週目 | Step 4・5：Cloud Storage、Firestore、認証付きの Cloud Run API、Video Intelligence API との比較 | 結果を安全にクラウドへ保存でき、自前の YOLO と Google の API の違いを説明できる |
-| 4週目 | Step 6・8：Docker、Artifact Registry、Compute Engine（CPU）、後片付け | クラウドの VM で同じ認識処理を動かせる |
-| 5週目（任意） | Step 7：GPU の割り当て申請、GPU の VM、速度と料金の比較 | GPU が必要になる条件を数字で説明できる |
+| 週            | 学習内容                                                                                       | 到達目標                                                                        |
+| ------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| 1週目         | Step 1・2：画像と動画の検出、追跡、FPS の計測                                                  | 動画の人物を追跡 ID 付きで保存でき、FPS を測れる                                |
+| 2週目         | Step 3：線を越えた人数、滞在時間、姿勢、精度の評価                                             | 人物の認識が、どんな条件で間違えるかを説明できる                                |
+| 3週目         | Step 4・5：Cloud Storage、Firestore、認証付きの Cloud Run API、Video Intelligence API との比較 | 結果を安全にクラウドへ保存でき、自前の YOLO と Google の API の違いを説明できる |
+| 4週目         | Step 6・8：Docker、Artifact Registry、Compute Engine（CPU）、後片付け                          | クラウドの VM で同じ認識処理を動かせる                                          |
+| 5週目（任意） | Step 7：GPU の割り当て申請、GPU の VM、速度と料金の比較                                        | GPU が必要になる条件を数字で説明できる                                          |
 
 GPU の割り当ては、承認まで時間がかかることがあります。GPU を試すなら、3週目のうちに申請しておきます。
 
 ## 8. 費用を抑えるための注意点
 
 - 最初は予算アラートを設定する（通知だけで、利用は止まらない）
-- Step 1〜3 はローカル PC の CPU で行う
+- Step 1〜3 はローカル PC（WSL）の CPU で行う
 - GPU 付きの VM は、CPU で足りないと確かめてから使う
 - VM は使い終わったら削除する。停止してもディスクの料金は残る
 - Firestore にはまとめだけを入れ、フレームごとのデータは Cloud Storage に置く
@@ -1186,9 +1251,9 @@ GPU の割り当ては、承認まで時間がかかることがあります。G
 ## 9. 最初に着手すること
 
 1. 練習に使う映像を決める（第3章のルールに従う）
-2. ローカル PC に Python 3.12 と uv を用意する
+2. WSL の Ubuntu に uv を用意する（Python 3.13 は uv が入れる）
 3. Step 1 でサンプル画像の人物を検出する
-4. Step 2 で動画ファイル、次に Web カメラの人物を追跡する
+4. Step 2 で動画ファイル、次にカメラアプリで録画した動画の人物を追跡する
 
 最初の成果物は、動画の人物に追跡 ID 付きの枠を描いて保存し、人物ごとのまとめ（`summary.json`）を出力する Python プログラムです。これを完成させてから、Google Cloud に進みます。
 
