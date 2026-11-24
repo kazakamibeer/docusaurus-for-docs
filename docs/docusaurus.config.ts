@@ -28,6 +28,8 @@ const config: Config = {
 
   onBrokenLinks: 'throw',
   markdown: {
+    // ```mermaid コードブロックを図として表示する
+    mermaid: true,
     hooks: {
       onBrokenMarkdownLinks: 'warn',
     },
@@ -59,6 +61,8 @@ const config: Config = {
       } satisfies Preset.Options,
     ],
   ],
+
+  themes: ['@docusaurus/theme-mermaid'],
 
   themeConfig: {
     // Replace with your project's social card
