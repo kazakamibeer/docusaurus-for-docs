@@ -118,11 +118,56 @@ sudo apt install -y libsm6 libice6
 
 ### 2-3. 練習用の動画を用意する
 
-最初は、Ultralytics が人数カウントのデモに使っている公開のサンプル動画を使います。人が歩いている短い動画です。
+最初は、OpenCV（画像処理のライブラリ）が公開しているサンプル動画 `vtest.avi` を使います。建物の前の広場を高い位置から撮った約80秒の動画で、何人もの人がいろいろな向きに歩いています。人が重なる、柱の陰に隠れる、遠くて小さく写る、といった場面も含まれていて、Step 3 の練習にも向いています。
+
+このハンズオンの後の Step（Cloud Storage への保存など）は `sample.mp4` という名前を前提にしているので、ダウンロードしたあと MP4 形式に変換します。変換用の `to_mp4.py` を作ります。
 
 ```bash
-curl -L -o sample.mp4 https://github.com/ultralytics/assets/releases/download/v0.0.0/People-counting-compressed.mp4
+cat > to_mp4.py <<'EOF'
+"""動画を MP4 形式に変換する（例：uv run python to_mp4.py vtest.avi sample.mp4）。"""
+import sys
+
+import cv2
+
+if len(sys.argv) != 3:
+    raise SystemExit("使い方: uv run python to_mp4.py 元の動画 変換後の動画.mp4")
+src, dst = sys.argv[1], sys.argv[2]
+
+cap = cv2.VideoCapture(src)
+if not cap.isOpened():
+    raise SystemExit(f"動画を開けません: {src}")
+fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
+size = (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+writer = cv2.VideoWriter(dst, cv2.VideoWriter_fourcc(*"mp4v"), fps, size)
+
+frames = 0
+while True:
+    ok, frame = cap.read()
+    if not ok:
+        break
+    writer.write(frame)
+    frames += 1
+
+cap.release()
+writer.release()
+print(f"変換しました: {dst}（{frames} フレーム、{fps:.0f} FPS、{size[0]} x {size[1]}）")
+EOF
 ```
+
+ダウンロードして変換し、元のファイルを消します。
+
+```bash
+curl -L -o vtest.avi https://raw.githubusercontent.com/opencv/opencv/4.x/samples/data/vtest.avi
+uv run python to_mp4.py vtest.avi sample.mp4
+rm vtest.avi
+```
+
+```text
+変換しました: sample.mp4（795 フレーム、10 FPS、768 x 576）
+```
+
+> **人数カウントのデモ動画は使わない**
+> Ultralytics も人の歩くサンプル動画を公開していますが、その多くはデモの結果の動画で、枠や数え方の線が最初から描き込まれています。自分の検出結果と見分けがつかなくなるので、練習には何も描かれていない動画を使います。
 
 ### 2-4. 動画の情報を調べる
 
@@ -156,19 +201,19 @@ uv run python video_info.py sample.mp4
 サンプル動画では、次のように表示されます。
 
 ```text
-FPS: 50.00
-フレーム数: 250
-解像度: 1280 x 720
-長さ: 5.0 秒
+FPS: 10.00
+フレーム数: 795
+解像度: 768 x 576
+長さ: 79.5 秒
 ```
 
-1秒に50枚、全部で250枚の画像が並んだ、5秒の動画です。`video.py` は、この250枚それぞれに検出と追跡を行います。表示された値をメモしておきます（5-5 で、処理の速さと比べます）。
+1秒に10枚、全部で795枚の画像が並んだ、約80秒の動画です。`video.py` は、この795枚それぞれに検出と追跡を行います。表示された値をメモしておきます（5-5 で、処理の速さと比べます）。
 
 ## 3. プログラムを書く
 
 ### 3-1. video.py を作る
 
-VS Code で新しいファイル `video.py` を作り（`code video.py` でも開けます）、次の内容を貼り付けて保存します。ハンズオン計画の Step 2 のコードと同じものです。Step 3〜6 もこのコードを前提にしているので、**このステップでは書き換えずに使います**。
+VS Code で新しいファイル `video.py` を作り（`code video.py` でも開けます）、次の内容を貼り付けて保存します。Step 3〜6 もこのコードを前提にしているので、**このステップでは書き換えずに使います**。
 
 ```python
 """動画から人物を検出・追跡し、結果をファイルに保存する。"""
@@ -341,7 +386,7 @@ uv run python video.py --source sample.mp4
 保存しました: out/summary.json
 ```
 
-2026年11月に試したときは、5秒のサンプル動画（250フレーム）の処理に約40秒かかりました。動画の長さの約8倍の時間がかかる計算です。時間は PC の性能によって変わります。処理中は何も表示されませんが、止まっているわけではありません。
+2026年11月に試したときは、約80秒のサンプル動画（795フレーム）の処理に約1分かかりました。時間は PC の性能によって変わります。処理中は何も表示されませんが、止まっているわけではありません。
 
 ### 4-2. 結果の動画を見る
 
@@ -415,14 +460,15 @@ wc -l out/detections.jsonl
 `head -5` は先頭の5行を、`wc -l` は行数（＝検出した件数）を表示します。サンプル動画では、次のようになりました（以下、結果の例は2026年11月に試したものです。ライブラリの版によって少し変わります）。
 
 ```text
-{"frame": 0, "tracking_id": 1, "confidence": 0.709, "bbox": [579, 144, 685, 435]}
-{"frame": 0, "tracking_id": 2, "confidence": 0.545, "bbox": [747, 36, 915, 321]}
-{"frame": 1, "tracking_id": 1, "confidence": 0.667, "bbox": [575, 138, 691, 459]}
-...
-321 out/detections.jsonl
+{"frame": 0, "tracking_id": 1, "confidence": 0.826, "bbox": [254, 220, 283, 308]}
+{"frame": 0, "tracking_id": 2, "confidence": 0.816, "bbox": [640, 240, 684, 322]}
+{"frame": 0, "tracking_id": 3, "confidence": 0.739, "bbox": [499, 158, 530, 232]}
+{"frame": 1, "tracking_id": 1, "confidence": 0.873, "bbox": [263, 218, 292, 308]}
+{"frame": 1, "tracking_id": 2, "confidence": 0.845, "bbox": [637, 241, 682, 324]}
+4499 out/detections.jsonl
 ```
 
-1行目と2行目は、0番目のフレームに2人（ID 1 と ID 2）がいたという意味です。3行目は、次のフレームでも ID 1 の人が少し動いた位置にいたことを表しています。
+1〜3行目は、0番目のフレームに3人（ID 1・2・3）がいたという意味です。4行目は、次のフレームでも ID 1 の人が少し右（x1 が 254 → 263）に動いた位置にいたことを表しています。
 
 | 項目          | 意味                                                                 |
 | ------------- | -------------------------------------------------------------------- |
@@ -442,18 +488,19 @@ cat out/summary.json
 ```json
 {
   "video_id": "sample",
-  "fps": 50.0,
-  "frame_count": 250,
+  "fps": 10.0,
+  "frame_count": 795,
   "person_tracks": [
-    { "tracking_id": 1, "first_seen_sec": 0.0,  "last_seen_sec": 0.76, "duration_sec": 0.78, "max_confidence": 0.849 },
-    { "tracking_id": 2, "first_seen_sec": 0.0,  "last_seen_sec": 2.38, "duration_sec": 2.4,  "max_confidence": 0.795 },
-    { "tracking_id": 4, "first_seen_sec": 0.82, "last_seen_sec": 4.66, "duration_sec": 3.86, "max_confidence": 0.876 },
-    { "tracking_id": 6, "first_seen_sec": 3.42, "last_seen_sec": 4.98, "duration_sec": 1.58, "max_confidence": 0.898 }
+    { "tracking_id": 1, "first_seen_sec": 0.0, "last_seen_sec": 15.3, "duration_sec": 15.4, "max_confidence": 0.892 },
+    { "tracking_id": 2, "first_seen_sec": 0.0, "last_seen_sec": 2.3,  "duration_sec": 2.4,  "max_confidence": 0.885 },
+    { "tracking_id": 3, "first_seen_sec": 0.0, "last_seen_sec": 1.7,  "duration_sec": 1.8,  "max_confidence": 0.84 },
+    { "tracking_id": 5, "first_seen_sec": 1.1, "last_seen_sec": 37.4, "duration_sec": 36.4, "max_confidence": 0.881 },
+    ...（全部で31件）
   ]
 }
 ```
 
-（実際のファイルは1項目ずつ改行されています。ここでは読みやすいように詰めています。）
+（実際のファイルは1項目ずつ改行されていて、31件すべてが並んでいます。ここでは読みやすいように詰めて、先頭の4件だけを載せています。）
 
 | 項目                              | 意味                                   |
 | --------------------------------- | -------------------------------------- |
@@ -466,10 +513,10 @@ cat out/summary.json
 
 この例からは、次のことが読み取れます。
 
-- 5秒の間に、4つの ID（4人分）が記録された
-- ID 1 は最初の 0.78 秒だけ映り、画面の外に出た。入れ替わるように、0.82 秒から ID 4 の人が入ってきた
-- ID が 1, 2, 4, 6 と飛んでいる：ByteTrack は、新しい人の候補に番号を付けてから、数フレーム続けて見えたものだけを本当の人物として残します。1フレームだけの誤検出などに使われた番号（3 と 5）は、結果に残りません
-- ID 2 は 0〜2.38 秒の間ずっと同じ ID ですが、`detections.jsonl` で数えると、この間の120フレームのうち検出されたのは88フレームでした。検出が途切れたフレームがあっても、ByteTrack が予測でつないで同じ ID を保っています
+- 約80秒の間に、31の ID が記録された。同時に映っていた人数は、多いときで9人
+- ID 5 の人は、1.1 秒から 37.4 秒まで、36秒以上同じ ID で追跡された
+- ID が 1, 2, 3, 5 と飛んでいる（最後の ID は 48）：ByteTrack は、新しい人の候補に番号を付けてから、数フレーム続けて見えたものだけを本当の人物として残します。1フレームだけの誤検出などに使われた番号（この例では 4 など）は、結果に残りません
+- 検出が途切れても ID は保たれる：ID 7 の人は、最初に見えてから最後に見えるまでの40フレームのうち、検出されたのは16フレームだけでした（柱の陰を通ったため）。それでも ByteTrack が予測でつないで、同じ ID を保っています
 
 **`person_tracks` の数は、映っていた人数と同じとは限りません。** 1人の ID が途中で途切れて新しい ID になると、1人が2つ以上に数えられます。`duration_sec` がとても短い ID（0.1 秒など）は、誤検出や ID の途切れであることが多いです。
 
@@ -477,12 +524,12 @@ cat out/summary.json
 
 `detections.jsonl` の行数と、`summary.json` の `person_tracks` の数を比べます。サンプル動画では、次のとおりでした。
 
-| ファイル                                      | 件数  |
-| --------------------------------------------- | ----- |
-| `detections.jsonl`（フレームごと）            | 321件 |
-| `summary.json` の `person_tracks`（人物ごと） | 4件   |
+| ファイル                                      | 件数    |
+| --------------------------------------------- | ------- |
+| `detections.jsonl`（フレームごと）            | 4,499件 |
+| `summary.json` の `person_tracks`（人物ごと） | 31件    |
 
-5秒の動画に、多くても2人しか同時に映っていなくても、フレームごとに記録すると321件になります。30 FPS で3人が映る1分の動画なら、約5,400件です。
+10 FPS という少なめのフレーム数の、80秒の動画でも、フレームごとに記録すると4,499件になります。30 FPS の動画なら、この3倍です。
 
 フレームごとに記録すると件数がすぐに数千件になります。Step 4 で Firestore（書き込み件数で課金される）にはまとめだけを入れ、フレームごとのデータは Cloud Storage にファイルとして置くのは、このためです。
 
@@ -495,7 +542,9 @@ cat out/summary.json
 | 処理 FPS ≧ 元の動画の FPS  | リアルタイム（カメラの映像を遅れずに処理）に間に合う                   |
 | 処理 FPS ＜ 元の動画の FPS | リアルタイムには間に合わない。録画した動画を後から処理するなら問題ない |
 
-2026年11月に試したときは、処理 FPS はおよそ6〜7でした。サンプル動画は 50 FPS なので、リアルタイムには間に合っていません。CPU だけで動かすと、このくらいが普通です。
+2026年11月に試したときは、795フレームを約50秒（モデルの読み込みを除く）で処理したので、処理 FPS はおよそ15でした。サンプル動画は 10 FPS なので、この動画ならリアルタイムに間に合っています。
+
+一方、カメラアプリの動画のように 30 FPS で解像度も大きい動画では、CPU だけではリアルタイムに間に合わないことが多くなります。4-4 で試したときの値と比べてみます。
 
 この値は Step 7 で、クラウドの CPU・GPU と比べます。
 
@@ -522,11 +571,15 @@ uv run python video.py --source sample.mp4 --conf 0.25 --out-dir out_conf025
 uv run python video.py --source sample.mp4 --conf 0.6 --out-dir out_conf060
 ```
 
-| conf | person_tracks の数 | duration_sec が 1 秒未満の ID の数 | 気づいたこと |
-| ---- | ------------------ | ---------------------------------- | ------------ |
-| 0.25 |                    |                                    |              |
-| 0.4  |                    |                                    |              |
-| 0.6  |                    |                                    |              |
+サンプル動画では、次のようになりました。
+
+| conf | person_tracks の数 | duration_sec が 1 秒未満の ID の数 |
+| ---- | ------------------ | ---------------------------------- |
+| 0.25 | 36                 | 4                                  |
+| 0.4  | 31                 | 1                                  |
+| 0.6  | 37                 | 6                                  |
+
+conf を上げると、誤検出が減るので ID も減りそうに思えます。ところが 0.6 では逆に増えました。信頼度が少し下がっただけで検出が途切れるフレームが増え、そのたびに同じ人の ID が切れて、新しい ID が付いたためです。しきい値は「高ければ正確」というものではなく、見落とし・誤検出・ID の途切れのバランスで選ぶものだと分かります。
 
 ID の数は、次のコマンドで数えられます。
 
@@ -596,6 +649,7 @@ Step 2 が終わった時点で、プロジェクトのフォルダには次の�
 ~/dev/image-recognition-handson/
 ├── video.py          ← Step 2 のプログラム（Step 3〜6 で使う）
 ├── video_info.py     ← 動画の情報を調べる
+├── to_mp4.py         ← 動画を MP4 に変換する
 ├── sample.mp4
 ├── out/              ← 結果（Git には入らない）
 │   ├── output.mp4
@@ -607,20 +661,20 @@ Step 2 が終わった時点で、プロジェクトのフォルダには次の�
 区切りとして、プログラムを Git に記録しておきます。動画と結果は `.gitignore` により記録されません。
 
 ```bash
-git add video.py video_info.py
+git add video.py video_info.py to_mp4.py
 git commit -m "Step 2: 動画から人物を検出・追跡する"
 ```
 
 このあとの Step で、次のように使います。
 
-| Step 2 で作ったもの                  | 使う Step | 使い方                                                        |
-| ------------------------------------ | --------- | ------------------------------------------------------------- |
-| `video.py`                           | Step 3    | コピーして、線を越えた人数・滞在時間・姿勢の課題を作る        |
-| `detections.jsonl`                   | Step 3・4 | Step 3 で精度の確認に使い、Step 4 で Cloud Storage に保存する |
-| `summary.json`                       | Step 4    | 認証付きの Cloud Run API に送り、Firestore に保存する         |
-| `run()` 関数                         | Step 6    | VM の中で `run_job.py` から呼び出す                           |
-| `--show` を付けない実行              | Step 6    | 画面の無い VM・Docker で同じように動かす                      |
-| 処理 FPS・処理時間の記録（6-3）      | Step 7    | クラウドの CPU・GPU と比べる                                  |
-| ID の途切れ・入れ替わりの観察（6-4） | Step 3    | 精度の評価表につなげる                                        |
+| Step 2 で作ったもの                  | 使う Step | 使い方                                                                                          |
+| ------------------------------------ | --------- | ----------------------------------------------------------------------------------------------- |
+| `video.py`                           | Step 3    | 条件の違う動画を処理して、ID の取り違えを確かめる（`video.py` 自体は書き換えない）              |
+| `detections.jsonl`                   | Step 3・4 | Step 3 で読み込んで、線を越えた人数や範囲にいた時間を数える。Step 4 で Cloud Storage に保存する |
+| `summary.json`                       | Step 4    | 認証付きの Cloud Run API に送り、Firestore に保存する                                           |
+| `run()` 関数                         | Step 6    | VM の中で `run_job.py` から呼び出す                                                             |
+| `--show` を付けない実行              | Step 6    | 画面の無い VM・Docker で同じように動かす                                                        |
+| 処理 FPS・処理時間の記録（6-3）      | Step 7    | クラウドの CPU・GPU と比べる                                                                    |
+| ID の途切れ・入れ替わりの観察（6-4） | Step 3    | 精度の評価表につなげる                                                                          |
 
 次は Step 3「人物の認識を深める」に進みます。
