@@ -1,13 +1,29 @@
 import {themes as prismThemes} from 'prism-react-renderer';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
+import {createHash} from 'node:crypto';
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
+
+// 簡易パスワード認証（src/theme/Root.tsx）で使うハッシュ。
+// 環境変数 SITE_PASSWORD（本番は GitHub Actions の Secret）から作り、
+// パスワードそのものはリポジトリにもサイトにも残さない。
+// SITE_PASSWORD が未設定のときは認証なしでビルドする（ローカル開発用）。
+// ソルトは src/theme/Root.tsx の PASSWORD_SALT と同じ値にすること。
+const PASSWORD_SALT = 'docusaurus-for-docs:';
+const sitePassword = process.env.SITE_PASSWORD ?? '';
+const passwordHash = sitePassword
+  ? createHash('sha256').update(PASSWORD_SALT + sitePassword).digest('hex')
+  : '';
 
 const config: Config = {
   title: 'ドキュメント共有リポジトリ',
   tagline: 'このリポジトリはファイルやドキュメントを共有するための場所です。',
   favicon: 'img/favicon.ico',
+
+  customFields: {
+    passwordHash,
+  },
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
   future: {
