@@ -1,0 +1,60 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1rem;
+  background: var(--ifm-background-color);
+}
+
+.card {
+  width: 100%;
+  max-width: 360px;
+  padding: 2rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: var(--ifm-card-border-radius);
+  background: var(--ifm-background-surface-color);
+  box-shadow: var(--ifm-global-shadow-lw);
+}
+
+.title {
+  margin-bottom: 0.5rem;
+  font-size: 1.25rem;
+}
+
+.description {
+  margin-bottom: 1.25rem;
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.9rem;
+}
+
+.label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: var(--ifm-font-weight-semibold);
+  font-size: 0.9rem;
+}
+
+.input {
+  width: 100%;
+  margin-bottom: 1rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--ifm-color-emphasis-400);
+  border-radius: var(--ifm-global-radius);
+  background: var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+  font-size: 1rem;
+}
+
+.input:focus {
+  border-color: var(--ifm-color-primary);
+  outline: 2px solid var(--ifm-color-primary-lightest);
+  outline-offset: 0;
+}
+
+.error {
+  margin-top: -0.5rem;
+  margin-bottom: 1rem;
+  color: var(--ifm-color-danger);
+  font-size: 0.9rem;
+}

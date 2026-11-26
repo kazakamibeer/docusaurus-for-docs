@@ -42,7 +42,19 @@ jobs:
           cache-dependency-path: docs/package-lock.json
       - name: Install dependencies
         run: cd docs && npm ci
+      # 簡易パスワード認証（docs/src/theme/Root.tsx）のパスワード。
+      # 未設定のまま認証なしで公開しないよう、空ならここで止める。
+      - name: Check site password
+        env:
+          SITE_PASSWORD: ${{ secrets.SITE_PASSWORD }}
+        run: |
+          if [ -z "$SITE_PASSWORD" ]; then
+            echo "::error::Secret SITE_PASSWORD が未設定です。Settings → Secrets and variables → Actions で登録してください。"
+            exit 1
+          fi
       - name: Build website
+        env:
+          SITE_PASSWORD: ${{ secrets.SITE_PASSWORD }}
         run: cd docs && npm run build
       - name: Setup Pages
         uses: actions/configure-pages@v6
